@@ -48,25 +48,30 @@ def run_pipeline():
     logging.info("Step 7: Model Training and Forecast (Temporal Split)")
     model_type = "XGBoost"
     params = {"max_depth": 5}
-    
-    # Ensure data is sorted by date
-    df_features = df_features.sort("Date")
-    n = df_features.height
+
+    # Sort and split data
+    df_sorted = df_features.sort("Date")
+    n = df_sorted.height
     block_size = n // 3
-    
-    # Training: first third
-    train_df = df_features.slice(0, block_size)
-    X_train = train_df.drop("Conversion Value")
+    train_df = df_sorted.slice(0, block_size)
+    validation_df = df_sorted.slice(block_size, block_size)
+    forecast_df = df_sorted.slice(2*block_size, n - 2*block_size)
+
+    def drop_features(data):
+        return data.drop(["Conversion Value", "Date"]) if "Date" in data.columns else data.drop("Conversion Value")
+
+    # Train only on first third
+    X_train = drop_features(train_df)
     y_train = train_df["Conversion Value"]
-    
-    # Forecast: last third
-    forecast_df = df_features.slice(2*block_size, n - 2*block_size)
-    X_forecast = forecast_df.drop("Conversion Value")
-    
-    # Train and forecast
     model = PredictiveModel(model_type, params)
     model.train(X_train, y_train)
-    y_forecast = model.forecast(X_forecast)
+
+    # Predict on validation and forecast sets
+    X_validation = drop_features(validation_df)
+    y_validation = validation_df["Conversion Value"]
+    X_forecast = drop_features(forecast_df)
+    predictions_validation = model.forecast(X_validation)
+    predictions_forecast = model.forecast(X_forecast)
 
     # Save trained model
     model_filename = f"{model_type.replace(' ', '_').lower()}_model.pkl"
@@ -74,12 +79,26 @@ def run_pipeline():
     model.save(model_filename)
     logging.info(f"Model saved to app/models/artifacts/{model_filename}")
 
+    # Save gold splits
+    os.makedirs("app/data/bucket", exist_ok=True)
+    train_df.write_parquet("app/data/bucket/gold_train.parquet")
+    validation_df.write_parquet("app/data/bucket/gold_validation.parquet")
+    forecast_df.write_parquet("app/data/bucket/gold_forecast.parquet")
+    logging.info("Gold splits saved to app/data/bucket/")
+
     # Save forecast predictions
     forecast_out = forecast_df.with_columns([
-        pl.Series("Forecast", y_forecast)
+        pl.Series("Forecast", predictions_forecast)
     ])
-    forecast_out.write_parquet("app/data/forecast.parquet")
-    logging.info("Forecast saved to app/data/forecast.parquet")
+    forecast_out.write_parquet("app/data/bucket/forecast.parquet")
+    logging.info("Forecast saved to app/data/bucket/forecast.parquet")
+
+    # Optionally save validation predictions for dashboard
+    validation_out = validation_df.with_columns([
+        pl.Series("Forecast", predictions_validation)
+    ])
+    validation_out.write_parquet("app/data/bucket/validation_forecast.parquet")
+    logging.info("Validation forecast saved to app/data/bucket/validation_forecast.parquet")
 
     logging.info("Pipeline execution completed successfully.")
 
