@@ -30,7 +30,7 @@ def plot_predictions(
         x=dates_train,
         y=y_train,
         mode="lines",
-        name="Histórico",
+        name="History",
         line=dict(color="#1976d2", width=3)
     ))
     # Test: actual values (second third, light blue)
@@ -38,7 +38,7 @@ def plot_predictions(
         x=dates_test,
         y=y_test,
         mode="lines",
-        name="Teste Real",
+        name="Test Actual",
         line=dict(color="#64b5f6", width=3)
     ))
     # Test: predicted values (second third, light orange)
@@ -46,7 +46,7 @@ def plot_predictions(
         x=dates_test,
         y=y_test_pred,
         mode="lines+markers",
-        name="Teste Previsto",
+        name="Test Predicted",
         line=dict(color="#ffd180", width=3)
     ))
     # Forecast: predicted values (last third, orange)
@@ -54,7 +54,7 @@ def plot_predictions(
         x=dates_forecast,
         y=y_forecast_pred,
         mode="lines+markers",
-        name="Previsão Futura",
+        name="Future Forecast",
         line=dict(color="#fb8c00", width=3)
     ))
     # Forecast: actual values (if available)
@@ -63,7 +63,7 @@ def plot_predictions(
             x=dates_forecast,
             y=y_forecast,
             mode="lines",
-            name="Futuro Real",
+            name="Future Actual",
             line=dict(color="#bdbdbd", width=2)
         ))
     fig.update_layout(
