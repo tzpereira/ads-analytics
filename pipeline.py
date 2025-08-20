@@ -53,9 +53,10 @@ def run_pipeline():
     df_sorted = df_features.sort("Date")
     n = df_sorted.height
     block_size = n // 3
-    train_df = df_sorted.slice(0, block_size)
-    validation_df = df_sorted.slice(block_size, block_size)
-    forecast_df = df_sorted.slice(2*block_size, n - 2*block_size)
+
+    train_df = df_sorted[:block_size]
+    validation_df = df_sorted[block_size:2*block_size]
+    forecast_df = df_sorted[2*block_size:]
 
     def drop_features(data):
         return data.drop(["Conversion Value", "Date"]) if "Date" in data.columns else data.drop("Conversion Value")
