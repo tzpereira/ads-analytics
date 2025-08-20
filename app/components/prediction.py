@@ -100,8 +100,8 @@ def render_prediction_metrics(y_true, y_pred):
     for idx, m in enumerate(metrics):
         with cols[idx % 3]:
             st.markdown(f"""
-                <div style='background-color:#fff;border-radius:8px;border:1px solid #e0e0e0;padding:8px 4px;margin-bottom:8px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.03);width:110px;min-width:110px;max-width:110px;display:inline-block;'>
-                    <span style='font-size:0.90em;color:#222;font-weight:500;'>{m['label']}</span><br>
-                    <span style='font-size:1.15em;color:#1976d2;font-weight:700;'>{m['value']}</span>
+                <div style='background-color:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:16px 8px;margin-bottom:10px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04);'>
+                    <span style='font-size:1.1em;color:#222;font-weight:600;'>{m['label']}</span><br>
+                    <span style='font-size:1.5em;color:#1976d2;font-weight:700;'>{m['value']}</span>
                 </div>
             """, unsafe_allow_html=True)
